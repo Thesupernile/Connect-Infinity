@@ -7,14 +7,16 @@
 
 
 <body>
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script src="index.js"></script>
+
     <div>
         <p id="hostPortInfo"></p>
-        <input type="text">
-        <button>Connect!</button>
+        <input id="hostInput" type="text">
+        <button onclick="connectButtonPressed()">Connect!</button>
+        <br>
+        <br>
+        <button onclick="hostToggle()"> Toggle host</button>
     </div>
-
-
-    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-    <script src="index.js" type="module"></script>
 </body>
 </html>
