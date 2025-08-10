@@ -40,20 +40,23 @@ function drawText() {
 
 // Register when a key is pressed and add it to the paragraphText
 document.body.onkeydown = function (key) {
-  if (key.key === "Backspace") {
-    chat = chat.slice(0, -1);
-  } else {
-    chat += key.key;
-  }
-  sendKey(key.key);
-  drawText();
+    if (connected){
+        if (key.key === "Backspace") {
+            chat = chat.slice(0, -1);
+        } else {
+            chat += key.key;
+        }
+        sendKey(key.key);
+        drawText();
+    }
 };
 
 function receiveKey(key) {
-  if (letterImageMap.has(key)) {
-    chat += key;
-  } else if (key === "Backspace") {
+  if (key === "Backspace") {
     chat = chat.slice(0, -1);
+  }
+  else{
+    chat += key;
   }
   drawText();
 }
