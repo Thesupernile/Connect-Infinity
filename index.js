@@ -3,6 +3,7 @@ var isGameStarted = false;
 var randomId = Math.floor(Math.random() * 100);
 var peer = new Peer("ConnectInfinity" + randomId);
 var connectedAddresses = [];
+let conn = null;
 
 // When peer is created, update the text to show the user your ID
 peer.on('open', function(id){
@@ -57,7 +58,7 @@ peer.on('connection', function(conn) {
     if (!isServer){
         if (!isGameStarted){
             if (data === "Connected"){
-                document.getElementById("HostportInfo").innerHTML = "You have connected. Wait for the game to begin";
+                document.getElementById("hostportInfo").innerHTML = "You have connected. Wait for the game to begin";
             }
         }
     }
