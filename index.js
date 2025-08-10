@@ -1,39 +1,41 @@
 let chat = "";
-const canvas = document.getElementById("chatCanvas");
-const ctx = canvas.getContext("2d");
+let connected = false;
+// const canvas = document.getElementById("chatCanvas");
+// const ctx = canvas.getContext("2d");
 
-var peer = new Peer();
-var conList = [];
+var peer = new Peer({debug: 3});
+var conn = null;
 
 
 peer.on('open', function(id) {
 	console.log('My peer ID is: ' + id);
   });
 
-function canvasClear(){
-    ctx.fillStyle = "rgba(222, 230, 246, 1)";
+// function canvasClear(){
+//     ctx.fillStyle = "rgba(222, 230, 246, 1)";
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     ctx.fillRect(0, 0, canvas.width, canvas.height);
+// }
 
 function drawText(){
-    let canvasDrawX = 0;
-    let canvasDrawY = 0;
+    // let canvasDrawX = 0;
+    // let canvasDrawY = 0;
 
-    const XIncrement = 64;
-    const YIncrement = 64;
+    // const XIncrement = 64;
+    // const YIncrement = 64;
 
-    canvasClear();
+    // canvasClear();
 
-    for (let i = 0; i < chat.length; i++){
-        ctx.drawImage(document.getElementById(chat[i]), canvasDrawX, canvasDrawY);
-        canvasDrawX += XIncrement;
-        if (canvasDrawX + XIncrement > canvas.width){
-            canvasDrawX = 0;
-            canvasDrawY += YIncrement;
-        }
-    }
+    // for (let i = 0; i < chat.length; i++){
+    //     ctx.drawImage(document.getElementById(chat[i]), canvasDrawX, canvasDrawY);
+    //     canvasDrawX += XIncrement;
+    //     if (canvasDrawX + XIncrement > canvas.width){
+    //         canvasDrawX = 0;
+    //         canvasDrawY += YIncrement;
+    //     }
+    // }
+    document.getElementById("chat").innerHTML = chat;
 }
 
 // Register when a key is pressed and add it to the paragraphText
@@ -60,9 +62,10 @@ function receiveKey(key) {
 
 function sendKey(key){
     // Broadcast the key you pressed to all peers on the network
-    for (let i = 0; i < conList.length; i++){
-        conList[i].send(key);
-    }
+    // for (let i = 0; i < conList.length; i++){
+    //     conList[i].send(key);
+    // }
+    conn.send(key);
 }
 
 function getSelfId(){
@@ -70,35 +73,42 @@ function getSelfId(){
 }
 
 function connectButtonPressed(){
-    var conn = peer.connect(document.getElementById("hostInput").value);
-    conList.push(conn);
+    setTimeout(() => {
+        conn = peer.connect(document.getElementById("hostInput").value);
+    }, 1000);
+    setupConnection(conn);
     console.log("Established connection with user: " + conn.peer);
+}
 
-    conn.on('open', function(){
-        // here you have conn.id
-        console.log("Connection with " + conn.peer + " opened");
-        conn.send('hi!');
+function changeDisplayToConnected(){
+    document.getElementById("IdBox").innerHTML = "Connected! :)";
+}
 
-        // Receive messages
-        conn.on('data', function(data) {
-            console.log('Received', data);
-            chat += data;
-        });
-
-        conn.send("Hello!");
-    });
+function setupConnection(connection) {
+  conn = connection;
+  conn.on("open", () => {
+    console.log("connected to", conn.peer);
+    connected = true;
+    changeDisplayToConnected();
+  });
+  conn.on("data", (data) => {
+    console.log("received", data);
+    receiveKey(data);
+  });
 }
 
 peer.on('connection', function(conn) {
-    conList.push(conn);
+    setTimeout(() => {
+        setupConnection(conn);
+    }, 1000);
 });
 
 function resizePage() {
 
-    canvas.width = window.innerWidth * 0.9;
-    canvas.height = window.innerHeight * 0.8;
+    // canvas.width = window.innerWidth * 0.9;
+    // canvas.height = window.innerHeight * 0.8;
 
-    canvasClear();
+    // canvasClear();
 
     drawText();
 }
