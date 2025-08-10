@@ -1,57 +1,108 @@
-let isServer = false;
-let isGameStarted = false;
-let randomId = Math.floor(Math.random() * 100);
-let peer = new Peer("ConnectInfinity" + randomId);
-let connectedAddresses = [];
-let connectedConns = [];
-let conn = null;
+let chat = "";
+const canvas = document.getElementById("chatCanvas");
+const ctx = canvas.getContext("2d");
 
-// Show your ID when peer is created
-peer.on('open', function(id){
-    document.getElementById("hostPortInfo").innerHTML = "Enter the id of the host below! Your id is: " + id;
-});
+var peer = new Peer();
+var conList = [];
 
-function connectButtonPressed(){
-    conn = peer.connect(document.getElementById("hostInput").value);
 
-    conn.on('open', function(){
-        console.log("Client: Connection opened");
-        conn.send(peer.id);
-    });
+peer.on('open', function(id) {
+	console.log('My peer ID is: ' + id);
+  });
 
-    conn.on('data', function(data){
-        console.log("Client received:", data);
-        if (!isServer && !isGameStarted && data === "Connected"){
-            document.getElementById("hostPortInfo").innerHTML = "You have connected. Wait for the game to begin";
-        }
-    });
+function canvasClear(){
+    ctx.fillStyle = "rgba(222, 230, 246, 1)";
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function hostToggle(){
-    isServer = !isServer;
-    if (isServer) {
-        document.getElementById("hostPortInfo").innerHTML = "You are now hosting. Your ID is: " + peer.id;
+function drawText(){
+    let canvasDrawX = 0;
+    let canvasDrawY = 0;
+
+    const XIncrement = 64;
+    const YIncrement = 64;
+
+    canvasClear();
+
+    for (let i = 0; i < chat.length; i++){
+        ctx.drawImage(document.getElementById(chat[i]), canvasDrawX, canvasDrawY);
+        canvasDrawX += XIncrement;
+        if (canvasDrawX + XIncrement > canvas.width){
+            canvasDrawX = 0;
+            canvasDrawY += YIncrement;
+        }
     }
 }
 
-// Server-side: Handle incoming connections
-peer.on('connection', function(newConn) {
-    console.log("Server: New connection received");
+// Register when a key is pressed and add it to the paragraphText
+document.body.onkeydown = function (key) {
+    if (key.key === "Backspace"){
+        chat = chat.slice(0, -1);
+    }
+    else{
+        chat += key.key;
+    }
+    sendKey(key.key);
+    drawText();
+};
 
-    newConn.on('open', function() {
-        console.log("Server: Connection opened with client");
-    });
+function receiveKey(key) {
+    if (letterImageMap.has(key)){
+        chat += key;
+    }
+    else if (key === "Backspace"){
+        chat = chat.slice(0, -1);
+    }
+    drawText();
+}
 
-    newConn.on('data', function(data){
-        console.log("Server received:", data);
-        if (isServer && !isGameStarted){
-            if (!connectedAddresses.includes(data)){
-                connectedAddresses.push(data);
-                connectedConns.push(newConn);
-                console.log("Server: Added new client", data);
-                // Notify the new client
-                newConn.send("Connected");
-            }
-        }
+function sendKey(key){
+    // Broadcast the key you pressed to all peers on the network
+    for (let i = 0; i < conList.length; i++){
+        conList[i].send(key);
+    }
+}
+
+function getSelfId(){
+    document.getElementById("IdBox").innerHTML = "Your id is: " + peer.id;
+}
+
+function connectButtonPressed(){
+    var conn = peer.connect(document.getElementById("hostInput").value);
+    conList.push(conn);
+    console.log("Established connection with user: " + conn.peer);
+
+    conn.on('open', function(){
+        // here you have conn.id
+        console.log("Connection with " + conn.peer + " opened");
+        conn.send('hi!');
+
+        // Receive messages
+        conn.on('data', function(data) {
+            console.log('Received', data);
+            chat += data;
+        });
+
+        conn.send("Hello!");
     });
+}
+
+peer.on('connection', function(conn) {
+    conList.push(conn);
 });
+
+function resizePage() {
+
+    canvas.width = window.innerWidth * 0.9;
+    canvas.height = window.innerHeight * 0.8;
+
+    canvasClear();
+
+    drawText();
+}
+
+window.onload = window.onresize = function () {
+    resizePage();
+};

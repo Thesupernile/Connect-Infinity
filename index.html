@@ -5,17 +5,23 @@
     <title>Connect Infinity</title>
 </head>
 
-<body>
-    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-    <script src="index.js"></script>
 
-    <div>
-        <p id="hostPortInfo"></p>
-        <input id="hostInput" type="text">
-        <button onclick="connectButtonPressed()">Connect!</button>
-        <br>
-        <br>
-        <button onclick="hostToggle()"> Toggle host</button>
-    </div>
+<body>
+    <canvas id="chatCanvas" class="chatCanvas"></canvas>
+    <br>
+    <br>
+    <p id="IdBox"></p>
+    <input id="hostInput" type="text">
+    <button onclick="connectButtonPressed()">Connect!</button>
+    <br>
+    <button onclick="getSelfId()"> Get your ID! </button>
+
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="index.js"></script>
+<div style="display: none;">
+    <img src="assets/a.png" id="a">
+    <img src="assets/b.png" id="b">
+</div>
 </body>
 </html>
+
